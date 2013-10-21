@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+    <!-- topbar starts -->
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="btn btn-navbar" data-toggle="collapse"
+                   data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand" href="/index"> <img alt="HyperMarket Logo" src="static/img/favicon.ico"/> <span>&nbsp Shop 7</span></a>
+                <div class="btn-group pull-right">
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-user"></i><span class="hidden-phone"> {{ user }}</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/change_pass">Change Password.</a></li>
+                        <li class="divider"></li>
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
+                </div>
+                <div class="btn-group pull-right">
+                    <a class="btn dropdown-toggle btn-danger" data-toggle="dropdown" href="">
+                        <i class="icon-warning-sign"></i><span class="hidden-phone"> LOCKDOWN!</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {#						<li><a href="#">Profile</a></li>#}
+                        {#						<li class="divider"></li>#}
+                        {% if lockdown == 0 %}
+                            <li><a href="/locked">WARNING : Initiate Lockdown.</a></li>
+                        {% elif lockdown == 1 %}
+                            <li style="margin-left: 5px; margin-right: 5px; background-color: darkred "><a href="/locked" style="color: #ffffff; "><strong> &#60; LOCKDOWN INITIATED &#62;</Lockdown> </strong></a></li>
+                        {% endif %}
+                        {% if lockdown == 1 %}
+                            <li style="padding: 2px"></li>
+                            <li style="margin-left: 5px; margin-right: 5px; background-color: green "><a href="/release_lockdown" style="color: #ffffff;"><strong>&#60; Release Lockdown &#62;</strong></a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <!-- user dropdown ends -->
+                {#				<div class="top-nav nav-collapse">#}
+                {#					<ul class="nav">#}
+                {#						<li>#}
+                {#							<form class="navbar-search pull-left">#}
+                {#								<input placeholder="Search" class="search-query span2" name="query" type="text">#}
+                {#							</form>#}
+                {#						</li>#}
+                {#					</ul>#}
+                {#				</div><!--/.nav-collapse -->#}
+            </div>
+        </div>
+    </div>
+    <!-- topbar ends -->
+    <div class="container-fluid">
+        <div class="row-fluid">
+
+            <!-- left menu starts -->
+            <div class="span2 main-menu-span">
+                <div class="well nav-collapse sidebar-nav">
+                    <ul class="nav nav-tabs nav-stacked main-menu">
+                        <li class="nav-header hidden-tablet">Main</li>
+                        <li><a class="ajax-link" href="/index"><i class="icon-home"></i><span class="hidden-tablet"> Home </span></a>
+                        </li>
+                        <li><a class="ajax-link" href="/products"><i class="icon-list-alt"></i><span
+                                class="hidden-tablet"> Inventory </span></a></li>
+{#                        <li><a class="ajax-link" href="/products_search"><i class="icon-eye-open"></i><span#}
+{#                                class="hidden-tablet"> Search Products </span></a></li>#}
+                        <li><a class="ajax-link" href="/transaction"><i class="icon-list-alt"></i><span
+                                class="hidden-tablet"> Transaction History </span></a></li>
+{#                        <li><a class="ajax-link" href="/trans_search"><i class="icon-eye-open"></i><span#}
+{#                                class="hidden-tablet"> Search Transaction </span></a></li>#}
+                        <li><a class="ajax-link" href="/staff"><i class="icon-user"></i><span
+                                class="hidden-tablet"> Staff</span></a></li>
+                        <li><a class="ajax-link" href="/contacts"><i class="icon-edit"></i><span
+                                class="hidden-tablet"> Contact HQ</span></a></li>
+                    </ul>
+                </div>
+                <!--/.well -->
+            </div>
+            <!--/span-->
+            <!-- left menu ends -->
+
+            <noscript>
+                <div class="alert alert-block span10">
+                    <h4 class="alert-heading">Warning!</h4>
+
+                    <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                        enabled to use this site.</p>
+                </div>
+            </noscript>
+
+            <div id="content" class="span10">
+                <!-- content starts -->
+                <div>
+                    <ul class="breadcrumb">
+                        <li>
+                            <a href="#">Home</a> <span class="divider">/</span>
+                        </li>
+                        <li>
+                            <a href="#">{{ title }}</a>
+                        </li>
+                    </ul>
+                </div>
+                {% block content_blank %}{% endblock %}
+                <!--/#content.span10-->
+                <!-- content ends -->
+            </div>
+            <!--/row-->
+        </div>
+        <!--/fluid-row-->
+        <hr>
+        {% block content_add %}{% endblock %}
+        <footer>
+            <br><Br><br>
+            <div class="center modal-footer">
+                <li>© 2013 Group07. All rights reserved.</li>
+            </div>
+
+        </footer>
+
+    </div><!--/.fluid-container-->
+{% endblock %}

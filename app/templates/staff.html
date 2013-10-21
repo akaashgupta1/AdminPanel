@@ -1,0 +1,142 @@
+{% extends "blank.html" %}
+{% block content_blank %}
+    <div class="row-fluid sortable">
+    <div class="box span12">
+        <div class="box-header well" data-original-title>
+            <h2><i class="icon icon-user"></i>&nbsp&nbsp&nbsp&nbsp{{ title }}</h2>
+            <div class="box-icon">
+                <a href="" id="clicker" class="btn btn-setting btn-round"><i class="icon-plus-sign"></i></a>
+                <a href="" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+
+            <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
+                <table aria-describedby="DataTables_Table_0_info" id="DataTables_Table_0"
+                       class="table table-striped table-bordered bootstrap-datatable datatable dataTable">
+                    <thead>
+                    <tr role="row">
+                        <th aria-label="Username: activate to sort column descending" aria-sort="ascending"
+                            style="width: 150px;"
+                            colspan="1" rowspan="1" aria-controls="DataTables_Table_0" tabindex="0" role="columnheader"
+                            class="sorting_asc">Staff ID
+                        </th>
+                        <th aria-label="Date registered: activate to sort column ascending" style="width: 150px"
+                            colspan="1"
+                            rowspan="1" aria-controls="DataTables_Table_0" tabindex="0" role="columnheader"
+                            class="sorting">Name
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody aria-relevant="all" aria-live="polite" role="alert">
+                    {% for index in range((list.__len__())) %}
+                        {% if ((index)%2 == 0) %}
+                            <tr class="odd">
+                                <td class="  sorting_1">{{ list.__getitem__(index)[0] }}</td>
+                                <td class="center ">{{ list.__getitem__(index)[1] }}</td>
+                            </tr>
+                        {% else %}
+                            <tr class="even">
+                                <td class="  sorting_1">{{ list.__getitem__(index)[0] }}</td>
+                                <td class="center ">{{ list.__getitem__(index)[1] }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!--/span-->
+    </div>
+{% endblock %}
+
+{% block content_add %}
+    <div class="modal hide fade"  id="myModal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">×</button>
+            <h3>Add a Staff Member: </h3><br>
+            <h5>Please enter employee details:</h5>
+        </div>
+        <div class="divider"></div>
+        <div class="modal-body">
+            <form id ="staff" class="form-horizontal" action="" method="post">
+            {{ form.hidden_tag() }}
+                <fieldset>
+                <br>
+                    <div class="span3"><span class="">Name: </span></div>
+                    <div class="input-prepend" title="Username" data-rel="tooltip">
+                        {{ form.name(class="input-large span12",type="text",placeholder="Enter a name.") }}
+                    </div>
+                    {% for error in form.errors.name %}
+                        &nbsp <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+                    <div class="clearfix"></div>
+                    <br>
+
+                    <div class="span3"><span class="">Address: </span></div>
+                    <div class="input-prepend" title="Address" data-rel="tooltip">
+                        {{ form.address(class="input-large span12",type="text",placeholder="Enter the address.") }}
+                    </div>
+                    {% for error in form.errors.address %}
+                        &nbsp <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+                    <div class="clearfix"></div>
+                    <br>
+
+                    <div class="span3"><span class="">Contact: </span></div>
+                    <div class="input-prepend" title="Contact" data-rel="tooltip">
+                        {{ form.contact(class="input-large span12",type="number",placeholder="Enter the contact number.") }}
+                    </div>
+                    {% for error in form.errors.contact %}
+                        &nbsp <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+                    <div class="clearfix"></div>
+                    <br>
+
+                    <div class="span3"><span class="">Gender: </span></div>
+                    <div class="input-prepend" title="Position" data-rel="tooltip">
+                        {{ form.gender(class="input-large span12",type="select") }}
+                    </div>
+                    {% for error in form.errors.gender %}
+                        &nbsp <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+                    <div class="clearfix"></div>
+                    <br>
+
+                    <div class="span3"><span class="">Date of Birth:<br> </span></div>
+                    <div class="input-prepend" title="DOB" data-rel="tooltip">
+                        {{ form.dob(class="input-large span12", type="date", placeholder="yyyy-mm-dd") }}
+                    </div>
+                    {% for error in form.errors.dob %}
+                        &nbsp <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+                    <div class="clearfix"></div>
+                    <br>
+
+                    <div class="span3"><span class="">Temporary Password: </span></div>
+                    <div class="input-prepend" title="Password" data-rel="tooltip">
+                        {{ form.temp_pass(class="input-large span12",type="text",placeholder="Leave Blank to default.") }}
+                    </div>
+                    {% for error in form.errors.temp_pass %}
+                        &nbsp <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+                    <div class="clearfix"></div><br>
+                </fieldset>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <input form="staff" type="submit" class="btn btn-success" value="Create User">
+            <a href="#" class="btn" data-dismiss="modal">Close</a>
+        </div>
+    </div>
+    {% if click == '1' %}
+        <script type="text/javascript">
+            alert('Addition of New Staff FAILED. Try Again.')
+        </script>
+    {% elif click == '2' %}
+        <script type="text/javascript">
+            alert('Addition of New Staff SUCCESSFUL.')
+        </script>
+    {% endif %}
+{% endblock %}

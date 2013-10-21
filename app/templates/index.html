@@ -1,0 +1,65 @@
+{% extends "blank.html" %}
+{% block content_blank %}
+{#    <div class="row-fluid sortable">#}
+{#        <div class="box span12">#}
+{#            <div class="box-header well" data-original-title>#}
+{#                <h2><i class="icon-home"></i>&nbsp&nbsp&nbsp&nbsp{{ title }}</h2>#}
+{##}
+{#                <div class="box-icon">#}
+{#                    <a href="" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>#}
+{#                </div>#}
+{#            </div>#}
+{#            <div class="box-content">#}
+{#            </div>#}
+{#        </div>#}
+{#        <!--/span-->#}
+{#    </div>#}
+    <div class="row-fluid sortable">
+    <div class="box span12">
+        <div class="box-header well" data-original-title>
+            <h2><i class="icon-home"></i>&nbsp&nbsp&nbsp&nbsp Start of Day Tasks</h2>
+
+            <div class="box-icon">
+                <a href="" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+            <div class="span12 well"> To perform <b>start of day</b> tasks such as <i>retrieve updated pricing and
+                product list</i> <b>FROM</b> the headquarters server, please press the button below:
+            </div>
+            <div style="text-align: center" id="submitbutton"><a
+                    href="javascript:process('/sod','#loader','#submitbutton','#result')">
+                <button class="btn btn-large btn-danger"> Perform</button>
+            </a></div>
+            <div class="center" style="display: none" id="loader"><img src="static/img/ajax-loaders/ajax-loader-8.gif"
+                                                                       title="static/img/ajax-loaders/ajax-loader-8.gif">
+            </div>
+        </div>
+        <!--/span-->
+    </div>
+    <div class="row-fluid sortable">
+        <div class="box span12">
+            <div class="box-header well" data-original-title>
+                <h2><i class="icon-home"></i>&nbsp&nbsp&nbsp&nbsp End of Day Tasks</h2>
+
+                <div class="box-icon">
+                    <a href="" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                </div>
+            </div>
+            <div class="box-content">
+                <div class="span12 well"> To perform <b>end of day</b> tasks such as <i>submit transactions and reduced
+                    stock levels</i> <b>TO</b> the headquarters server, please press the button below:
+                </div>
+                <div style="text-align: center" id="submitbutton2"><a
+                        href="javascript:process('/eod','#loader2','#submitbutton2','#result2')">
+                    <button class="btn btn-large btn-danger"> Perform</button>
+                </a></div>
+                <div class="center" style="display: none" id="loader2"><img
+                        src="static/img/ajax-loaders/ajax-loader-8.gif"
+                        title="static/img/ajax-loaders/ajax-loader-8.gif"></div>
+            </div>
+        </div>
+        <!--/span-->
+    </div>
+{% endblock %}
+

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+    <body style="background-color: #dfdfdf; opacity: 0.9">
+    <div class="container-fluid">
+        <div class="row-fluid">
+
+            <div class="row-fluid">
+                <div class="span12 center login-header">
+                    <h2>CEG HyperMarket Shop : 07</h2>
+                </div>
+                <!--/span-->
+            </div>
+            <!--/row-->
+
+            <div class="row-fluid">
+                <div class="well span5 center login-box">
+                    <div class="alert alert-info">
+                        Please <b><i>login</b></i> with your Staff ID and Password.
+                    </div>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                                {% for message in messages %}
+                                    <li style="color:red">{{ message }}</li>
+                                {% endfor %}
+                            <br>
+                        {% endif %}
+                    {% endwith %}
+                    <form class="form-horizontal" action="" name="login" method="post">
+                        {{ form.hidden_tag() }}
+                        <fieldset>
+                            <div class="input-prepend" title="Staff ID" data-rel="tooltip">
+                                <span class="add-on"><i class="icon-user"></i></span>
+                                {{ form.staffID(class="input-large span10",type="text",placeholder="Your ID") }}
+                            </div>
+                            {% for error in form.errors.staffID %}
+                                &nbsp <span style="color: red;">[{{ error }}]</span><br>
+                            {% endfor %}
+                            <div class="clearfix"></div>
+
+                            <div class="input-prepend" title="Password" data-rel="tooltip">
+                                <span class="add-on"><i class="icon-lock"></i></span>
+                                {{ form.password(class="input-large span10",type="password",placeholder="Your Password",value="") }}
+                            </div>
+                            {% for error in form.errors.password %}
+                                &nbsp <span style="color: red;">[{{ error }}]</span><br>
+                            {% endfor %}
+                            <div class="clearfix"></div>
+                            <p class="center span5">
+                                <input type="submit" class="btn btn-primary" value="Sign-In"/>
+                                <br><br>
+
+                            <div class="box"
+                                 style="box-shadow: 0 0 0 0px;border-color: darkgray; border-left: 0px; border-right: 0px; padding-top: 10px; padding-bottom: 10px">
+                                <a href="/forgot_pass">
+                                    <i>Forgot your password?</i></a>
+                            </div>
+                            </p>
+                        </fieldset>
+                    </form>
+                </div>
+                <!--/span-->
+            </div>
+            <!--/row-->
+        </div>
+        <!--/fluid-row-->
+
+    </div><!--/.fluid-container-->
+{% endblock %}
+

@@ -1,0 +1,65 @@
+{% extends "blank.html" %}
+{% block content_blank %}
+    <div class="row-fluid sortable">
+        <div class="box span12">
+            <div class="box-header well" data-original-title>
+                <h2><i class="icon-edit"></i>&nbsp&nbsp&nbsp&nbsp{{ title }}</h2>
+
+                <div class="box-icon">
+                    <a href="" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                </div>
+            </div>
+            <div class="box-content">
+                <p class="span12">In case of any <strong><i>queries/emergencies</i></strong>, please contact:</p>
+            </div>
+            <div class="box-content">
+                <div class="span4">
+                    <p><h4>Uncle Soo</h4></p>
+                    <div class="well" style="min-height: 160px">
+                        <div class="muted span6" style="margin-bottom: 0;">
+                            <img src="static/img/uncle_soo.jpg">
+                        </div>
+                        <p class="muted span6" style="margin-bottom: 0;">
+                            <br><b>Chief Executive Officer</b><br>
+                            <i>(dcssooyj@nus.edu.sg)</i><br><br>
+                            COMPUTER SCIENCE<br>
+                            Lecturer<br>
+                            COM2-02-61<br>
+                        </p>
+                    </div>
+                </div>
+                <div class="span4">
+                    <p><h4>Dr. Colin Tan</h4></p>
+                    <div class="well" style="min-height: 160px">
+                        <div class="muted span6" style="margin-bottom: 0;">
+                            <img src="static/img/colin.jpg">
+                        </div>
+                        <p class="muted span6" style="margin-bottom: 0;">
+                           <br><b>Chief Technical Officer</b><br>
+                            <i>(dcstanc@nus.edu.sg)</i><br><br>
+                            COMPUTER SCIENCE<br>
+                            Senior Lecturer<br>
+                            COM2-02-08<br>
+                        </p>
+                    </div>
+                </div>
+                <div class="span4">
+                    <p><h4>Dr. Rajesh Panicker</h4></p>
+                    <div class="well" style="min-height: 160px">
+                        <div class="muted span6" style="margin-bottom: 0;">
+                            <img src="static/img/panicker.jpg">
+                        </div>
+                        <p class="muted span6" style="margin-bottom: 0;">
+                           <br><b>Chief Operations Officer</b><br>
+                            <i>(rajesh@nus.edu.sg)</i><br><br>
+                            ECE<br>
+                            Lecturer<br>
+                            65165253<br>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/span-->
+    </div>
+{% endblock %}
