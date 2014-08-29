@@ -55,12 +55,19 @@
 function process(url,loadingId, destId) {
     $(destId).hide();
     $(loadingId).show();
-    $.post(url).done(function() {
+    $.post(url).done(function(result) {
         $(loadingId).hide();
         $(destId).show();
-        alert('Transaction Successful.');
+        if(result['result'] == '1')
+        {
+            alert('Retrieval Successful. Transactions can now take place.');
+        }
+        if(result['result'] == '2')
+        {
+            alert('Submission Successful. The transactions have ended for the day.');
+        }
     }).fail(function() {
-        alert('Transaction Unsuccessful.');
+        alert('Error occured. Please try again.');
         $(loadingId).hide();
         $(destId).show();
     });
@@ -78,12 +85,11 @@ function addSet(divName){
 function transsubmit(url){
     var a = $('#addtrans').serializeArray();
     a.push({name: "Count",value: counter});
-{#    console.log(a);#}
     $.post(url,a).done(function(result) {
-        console.log(result)
         if (result['result'] =='1')
         {
-            alert('Transaction Successful.');
+            alert('Transaction Successful. The details were: \n\n'+result['plist']);
+            window.location.href = "/transaction";
         }
         else
         {
@@ -91,6 +97,23 @@ function transsubmit(url){
         }
     }).fail(function() {
         alert('Transaction Unsuccessful.');
+    });
+}
+function changePDU(url){
+    var a = $('#addpdu').serializeArray();
+
+    $.post(url,a).done(function(result) {
+        if (result['result'] =='1')
+        {
+            alert('Change Successful.');
+            window.location.href = "/pdu";
+        }
+        else
+        {
+            alert('Change Unsuccessful: '+ result['result']);
+        }
+    }).fail(function() {
+        alert('Change Unsuccessful.');
     });
 }
 </script>

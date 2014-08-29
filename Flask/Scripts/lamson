@@ -1,0 +1,9 @@
+#!C:\Users\Mewtwo\Documents\Singapore\NUS\Modules - Semester 5\3002\FinalShop\flask\Scripts\python.exe
+
+from modargs import args
+from lamson import commands
+import sys
+
+args.parse_and_run_command(sys.argv[1:], commands, default_command="help")
+
+

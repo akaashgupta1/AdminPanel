@@ -1,7 +1,9 @@
 CSRF_ENABLED = True
 SECRET_KEY = 'niubo43!2dywlluybo875@13guessth*(7is'
-LOCALDATABASE='shop_db'
-HQDATABASE='headquarters'
-DEBUG=False
-USERNAME='CG3002Managers'
-PASSWORD='group007'
+LOCALDATABASE = 'shop_db'
+HQDATABASE = 'temp_hq'
+DEBUG = True
+LOCALUSERNAME= 'CG3002Managers'
+HQUSERNAME= 'sadm'
+LOCALPASSWORD = 'group007'
+HQPASSWORD = 'a+baby'

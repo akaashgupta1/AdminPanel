@@ -74,7 +74,6 @@ class Iterator(Iterable):
 
     @abstractmethod
     def next(self):
-        'Return the next item from the iterator. When exhausted, raise StopIteration'
         raise StopIteration
 
     def __iter__(self):
@@ -83,7 +82,7 @@ class Iterator(Iterable):
     @classmethod
     def __subclasshook__(cls, C):
         if cls is Iterator:
-            if _hasattr(C, "next") and _hasattr(C, "__iter__"):
+            if _hasattr(C, "next"):
                 return True
         return NotImplemented
 
@@ -195,7 +194,6 @@ class Set(Sized, Iterable, Container):
         return self._from_iterable(value for value in other if value in self)
 
     def isdisjoint(self, other):
-        'Return True if two sets have a null intersection.'
         for value in other:
             if value in self:
                 return False
@@ -261,16 +259,6 @@ Set.register(frozenset)
 
 
 class MutableSet(Set):
-    """A mutable set is a finite, iterable container.
-
-    This class provides concrete generic implementations of all
-    methods except for __contains__, __iter__, __len__,
-    add(), and discard().
-
-    To override the comparisons (presumably for speed, as the
-    semantics are fixed), all you have to do is redefine __le__ and
-    then the other operations will automatically follow suit.
-    """
 
     @abstractmethod
     def add(self, value):
@@ -317,24 +305,18 @@ class MutableSet(Set):
         return self
 
     def __ixor__(self, it):
-        if it is self:
-            self.clear()
-        else:
-            if not isinstance(it, Set):
-                it = self._from_iterable(it)
-            for value in it:
-                if value in self:
-                    self.discard(value)
-                else:
-                    self.add(value)
+        if not isinstance(it, Set):
+            it = self._from_iterable(it)
+        for value in it:
+            if value in self:
+                self.discard(value)
+            else:
+                self.add(value)
         return self
 
     def __isub__(self, it):
-        if it is self:
-            self.clear()
-        else:
-            for value in it:
-                self.discard(value)
+        for value in it:
+            self.discard(value)
         return self
 
 MutableSet.register(set)
@@ -345,20 +327,11 @@ MutableSet.register(set)
 
 class Mapping(Sized, Iterable, Container):
 
-    """A Mapping is a generic container for associating key/value
-    pairs.
-
-    This class provides concrete generic implementations of all
-    methods except for __getitem__, __iter__, and __len__.
-
-    """
-
     @abstractmethod
     def __getitem__(self, key):
         raise KeyError
 
     def get(self, key, default=None):
-        'D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.'
         try:
             return self[key]
         except KeyError:
@@ -373,29 +346,23 @@ class Mapping(Sized, Iterable, Container):
             return True
 
     def iterkeys(self):
-        'D.iterkeys() -> an iterator over the keys of D'
         return iter(self)
 
     def itervalues(self):
-        'D.itervalues() -> an iterator over the values of D'
         for key in self:
             yield self[key]
 
     def iteritems(self):
-        'D.iteritems() -> an iterator over the (key, value) items of D'
         for key in self:
             yield (key, self[key])
 
     def keys(self):
-        "D.keys() -> list of D's keys"
         return list(self)
 
     def items(self):
-        "D.items() -> list of D's (key, value) pairs, as 2-tuples"
         return [(key, self[key]) for key in self]
 
     def values(self):
-        "D.values() -> list of D's values"
         return [self[key] for key in self]
 
     # Mappings are not hashable by default, but subclasses can change this
@@ -423,10 +390,6 @@ class MappingView(Sized):
 
 class KeysView(MappingView, Set):
 
-    @classmethod
-    def _from_iterable(self, it):
-        return set(it)
-
     def __contains__(self, key):
         return key in self._mapping
 
@@ -436,10 +399,6 @@ class KeysView(MappingView, Set):
 
 
 class ItemsView(MappingView, Set):
-
-    @classmethod
-    def _from_iterable(self, it):
-        return set(it)
 
     def __contains__(self, item):
         key, value = item
@@ -470,15 +429,6 @@ class ValuesView(MappingView):
 
 class MutableMapping(Mapping):
 
-    """A MutableMapping is a generic container for associating
-    key/value pairs.
-
-    This class provides concrete generic implementations of all
-    methods except for __getitem__, __setitem__, __delitem__,
-    __iter__, and __len__.
-
-    """
-
     @abstractmethod
     def __setitem__(self, key, value):
         raise KeyError
@@ -490,9 +440,6 @@ class MutableMapping(Mapping):
     __marker = object()
 
     def pop(self, key, default=__marker):
-        '''D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
-          If key is not found, d is returned if given, otherwise KeyError is raised.
-        '''
         try:
             value = self[key]
         except KeyError:
@@ -504,9 +451,6 @@ class MutableMapping(Mapping):
             return value
 
     def popitem(self):
-        '''D.popitem() -> (k, v), remove and return some (key, value) pair
-           as a 2-tuple; but raise KeyError if D is empty.
-        '''
         try:
             key = next(iter(self))
         except StopIteration:
@@ -516,27 +460,13 @@ class MutableMapping(Mapping):
         return key, value
 
     def clear(self):
-        'D.clear() -> None.  Remove all items from D.'
         try:
             while True:
                 self.popitem()
         except KeyError:
             pass
 
-    def update(*args, **kwds):
-        ''' D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
-            If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
-            If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
-            In either case, this is followed by: for k, v in F.items(): D[k] = v
-        '''
-        if len(args) > 2:
-            raise TypeError("update() takes at most 2 positional "
-                            "arguments ({} given)".format(len(args)))
-        elif not args:
-            raise TypeError("update() takes at least 1 argument (0 given)")
-        self = args[0]
-        other = args[1] if len(args) >= 2 else ()
-
+    def update(self, other=(), **kwds):
         if isinstance(other, Mapping):
             for key in other:
                 self[key] = other[key]
@@ -550,7 +480,6 @@ class MutableMapping(Mapping):
             self[key] = value
 
     def setdefault(self, key, default=None):
-        'D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D'
         try:
             return self[key]
         except KeyError:
@@ -595,16 +524,12 @@ class Sequence(Sized, Iterable, Container):
             yield self[i]
 
     def index(self, value):
-        '''S.index(value) -> integer -- return first index of value.
-           Raises ValueError if the value is not present.
-        '''
         for i, v in enumerate(self):
             if v == value:
                 return i
         raise ValueError
 
     def count(self, value):
-        'S.count(value) -> integer -- return number of occurrences of value'
         return sum(1 for v in self if v == value)
 
 Sequence.register(tuple)
@@ -614,13 +539,6 @@ Sequence.register(xrange)
 
 
 class MutableSequence(Sequence):
-
-    """All the operations on a read-only sequence.
-
-    Concrete subclasses must provide __new__ or __init__,
-    __getitem__, __setitem__, __delitem__, __len__, and insert().
-
-    """
 
     @abstractmethod
     def __setitem__(self, index, value):
@@ -632,36 +550,26 @@ class MutableSequence(Sequence):
 
     @abstractmethod
     def insert(self, index, value):
-        'S.insert(index, object) -- insert object before index'
         raise IndexError
 
     def append(self, value):
-        'S.append(object) -- append object to the end of the sequence'
         self.insert(len(self), value)
 
     def reverse(self):
-        'S.reverse() -- reverse *IN PLACE*'
         n = len(self)
         for i in range(n//2):
             self[i], self[n-i-1] = self[n-i-1], self[i]
 
     def extend(self, values):
-        'S.extend(iterable) -- extend sequence by appending elements from the iterable'
         for v in values:
             self.append(v)
 
     def pop(self, index=-1):
-        '''S.pop([index]) -> item -- remove and return item at index (default last).
-           Raise IndexError if list is empty or index is out of range.
-        '''
         v = self[index]
         del self[index]
         return v
 
     def remove(self, value):
-        '''S.remove(value) -- remove first occurrence of value.
-           Raise ValueError if the value is not present.
-        '''
         del self[self.index(value)]
 
     def __iadd__(self, values):

@@ -198,14 +198,17 @@ def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object"
     return _compile(pattern, flags|T)
 
-_alphanum = frozenset(
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+_alphanum = {}
+for c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890':
+    _alphanum[c] = 1
+del c
 
 def escape(pattern):
     "Escape all non-alphanumeric characters in pattern."
     s = list(pattern)
     alphanum = _alphanum
-    for i, c in enumerate(pattern):
+    for i in range(len(pattern)):
+        c = pattern[i]
         if c not in alphanum:
             if c == "\000":
                 s[i] = "\\000"

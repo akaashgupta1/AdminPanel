@@ -1,5 +1,5 @@
 @echo off
-set "VIRTUAL_ENV=C:\Users\Akaash\Documents\Singapore\NUS\Modules - Semester 5\3002\FinalShop\Flask"
+set "VIRTUAL_ENV=C:\Users\Mewtwo\Documents\Singapore\NUS\Modules - Semester 5\3002\FinalShop\flask"
 
 if defined _OLD_VIRTUAL_PROMPT (
     set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
@@ -9,7 +9,7 @@ if defined _OLD_VIRTUAL_PROMPT (
     )
 	set "_OLD_VIRTUAL_PROMPT=%PROMPT%"	
 )
-set "PROMPT=(Flask) %PROMPT%"
+set "PROMPT=(flask) %PROMPT%"
 
 if not defined _OLD_VIRTUAL_PYTHONHOME (
     set "_OLD_VIRTUAL_PYTHONHOME=%PYTHONHOME%"

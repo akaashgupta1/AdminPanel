@@ -526,7 +526,7 @@ def setencoding():
     """Set the string encoding used by the Unicode implementation.  The
     default is 'ascii', but if you're willing to experiment, you can
     change this."""
-    encoding = "ascii" # Default value set by _PyUnicode_Init()
+    encoding = "latin-1" # Default value set by _PyUnicode_Init()
     if 0:
         # Enable to support locale aware default string encodings.
         import locale

@@ -2,7 +2,54 @@ __author__ = 'Akaash'
 import datetime
 import MySQLdb
 import smtplib
+import pysftp
+import requests
 from werkzeug.security import generate_password_hash, check_password_hash
+import json
+
+def dropeverything(localDB):
+    query = " Delete from `transactions_info` where 1"
+    localDB.execute(query)
+    query = " Delete from `transactions` where 1"
+    localDB.execute(query)
+    query = " Delete from `product_information` where 1"
+    localDB.execute(query)
+    query = " Delete from `managers` where 1"
+    localDB.execute(query)
+    query = " Delete from `cashiers` where 1"
+    localDB.execute(query)
+    query = " Delete from `members` where 1"
+    localDB.execute(query)
+    return
+
+def changePDU(index,barcode,localDB):
+    index = "" + str(index)
+    if(not(index.isdigit())):
+        return "Invalid Index Entered."
+    barcode = "" + str(barcode)
+    if(not(barcode.isdigit())):
+        return "Invalid barcode Entered."
+    query0 = "Select count(*) from product_information where barcode = '%s'" % MySQLdb.escape_string(str(barcode))
+    localDB.execute(query0)
+    result = localDB.fetchone()
+    if(result[0] == 0):
+        return "Barcode not found."
+    message = '1'
+    query = "Select count(*) from pdu where pdu_index = %s" % MySQLdb.escape_string(str(index))
+    localDB.execute(query)
+    result = localDB.fetchone()
+    if(result[0] == 0):
+        query2 = "Insert into pdu values(%s,'%s')" %(MySQLdb.escape_string(str(index)),MySQLdb.escape_string(str(barcode)))
+        result = localDB.execute(query2)
+        if not result:
+            return ""
+    else:
+        query2 = "Update pdu set barcode = '%s' where pdu_index = %s" %(MySQLdb.escape_string(str(barcode)),MySQLdb.escape_string(str(index)))
+        result = localDB.execute(query2)
+        if not result:
+            return ""
+    return message
+
 
 def getBarcodeList(localDB):
     query = "Select barcode from product_information"
@@ -10,6 +57,11 @@ def getBarcodeList(localDB):
     result = list(localDB.fetchall())
     return result
 
+def getListOfPDU(localDB):
+    query = "Select pdu_index,barcode from pdu"
+    localDB.execute(query)
+    result = list(localDB.fetchall())
+    return result
 
 def getListOfStaffID(localDB):
     query = "Select staff_Id from cashiers order by staff_Id"
@@ -53,7 +105,8 @@ def getListOfTransactions(localDB):
 def getListOfProducts(localDB):
     query = "Select barcode,name,category,manufacturer,remaining_quantity,active_price,member_price from product_information"
     localDB.execute(query)
-    return list(localDB.fetchall())
+    result =  list(localDB.fetchall())
+    return result
 
 def sendemail(id,name,email):
     s=smtplib.SMTP()
@@ -66,7 +119,6 @@ def sendemail(id,name,email):
     header += 'Subject: CEG Shop 07: Request for Password Reset\n\n'
     msg = "\nGreetings! Your new password is : %s%s .\n\nYours sincerely, \nCEG Shop 07"  % (str(name),str(id))
     response = s.sendmail("cegshop07@gmail.com", email, header+msg)
-    print response
     s.quit()
     return True
 
@@ -126,12 +178,6 @@ def getStaffName(staffID, localDB):
         retieve_name = localDB.fetchone()
         return retieve_name[0]
     else:
-        #query = "Select name from managers where staff_id = %s " % (MySQLdb.escape_string(staffID))
-        #result = localDB.execute(query)
-        #if(result):
-        #    retieve_name = localDB.fetchone()
-        #    return retieve_name[0]
-        #else:
         return ""
 
 def checkShopLogin(staffID, epassword, localDB):
@@ -144,12 +190,6 @@ def checkShopLogin(staffID, epassword, localDB):
         retieve_pass_cash = localDB.fetchone()
         return check_password_hash(retieve_pass_cash[0],epassword)
     else:
-        #query = "Select password from managers where staff_id = %s " % (MySQLdb.escape_string(staffID))
-        #result = localDB.execute(query)
-        #if(result):
-        #    retieve_pass_manager = localDB.fetchone()
-        #    return pwd_context.verify(password,retieve_pass_manager[0])
-        #else:
         return False
 
 def clearLocalCashierTable(localDB):
@@ -205,20 +245,21 @@ def submitTransactionsToHQ(localDB, hqDB):
     localDB.execute(query)
     rows = list(localDB.fetchall())
     for Transaction in rows:
-        Barcode = Transaction[1]
-        TotalPrice = 0;
-        UnitSold = 0;
-        Date = Transaction[4]
-        if len(Transaction[0]) > 1:
+        if (Transaction) != "!":
+            Barcode = Transaction[1]
+            TotalPrice = 0;
+            UnitSold = 0;
+            Date = Transaction[4]
             for j in range(len(rows)):
                 tempTransaction = rows[j]
-                if tempTransaction[1] == Barcode and tempTransaction[4] == Date:
-                    rows[j] = ""
-                    UnitSold += tempTransaction[3]
-                    TotalPrice += tempTransaction[2]*tempTransaction[3]
+                if (tempTransaction != "!"):
+                    if tempTransaction[1] == Barcode and tempTransaction[4] == Date:
+                        rows[j] = "!"
+                        UnitSold += tempTransaction[3]
+                        TotalPrice += tempTransaction[2]*tempTransaction[3]
             newQuery = "Insert into hq_transactions values ('Shops007',"+"'"+(Barcode)+"',"+str(TotalPrice)+","+str(UnitSold)+",'"+datetime.date.strftime(Date,"%Y-%m-%d")+"')"
             hqDB.execute(newQuery)
-
+    return True
 
 def clearLocalTransactionDatabase(localDB):
     query = "Delete from transactions_info"
@@ -227,14 +268,27 @@ def clearLocalTransactionDatabase(localDB):
     localDB.execute(query)
     pass
 
+def getPriceList(barcode,quantity,localDB):
+    string=""
+    tp = 0
+    for row in range(len(barcode)):
+        tempbar = barcode.__getitem__(row)
+        tempquan = quantity.__getitem__(row)
+        query2 = "select active_price from product_information where barcode = '%s' " % str(tempbar)
+        localDB.execute(query2)
+        result = localDB.fetchone()
+        string += str(tempbar) + ": " + str(result[0]*int(tempquan)) + "$\n"
+        tp += result[0]*int(tempquan)
+    string+="Total Price: " + str(tp) + "$\n"
+    print string
+    return string
+
 def addTransactionToLocal(staff_Id,barcode,quantity, localDB):
     error = '1'
     date = datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d %H:%M:%S')
-    print date
     idquery = "select transaction_Id from transactions"
     localDB.execute(idquery)
     lists = (localDB.fetchall())
-    print lists
     transaction_Id = 0
     if len(lists) == 0:
         transaction_Id += 1
@@ -243,7 +297,7 @@ def addTransactionToLocal(staff_Id,barcode,quantity, localDB):
         for row in lists:
             temp = "" + row[0]
             newlist.append(int(temp))
-        print newlist.sort()
+        newlist.sort()
         transaction_Id = newlist[len(newlist)-1] + 1
     price = []
     for row in range(len(barcode)):
@@ -251,8 +305,29 @@ def addTransactionToLocal(staff_Id,barcode,quantity, localDB):
         query2 = "select active_price from product_information where barcode = '%s' " % str(tempbar)
         result = localDB.execute(query2)
         if(not result):
-            return "Barcode in Set " + str(row) + " not found."
+            return "Barcode in Set " + str(row+1) + " not found."
         price.append(localDB.fetchone()[0])
+    for row in range(len(barcode)):
+        tempbar = barcode.__getitem__(row)
+        query2 = "select remaining_quantity from product_information where barcode = '%s' " % str(tempbar)
+        result = localDB.execute(query2)
+        if(not result):
+            return "Barcode in Set " + str(row+1) + " not found."
+        else:
+            remquantity = localDB.fetchone()
+            deduct = (quantity.__getitem__(row))
+            if remquantity[0]<long(deduct):
+                print 1
+                return "Insufficient quantity for item in set " + str(row+1) + "."
+    for row in range(len(barcode)):
+        tempbar = barcode.__getitem__(row)
+        query2 = "select remaining_quantity from product_information where barcode = '%s' " % str(tempbar)
+        result = localDB.execute(query2)
+        if(result):
+            remquantity = localDB.fetchone()
+            newquantity = int(remquantity[0]) - int(quantity.__getitem__(row))
+            query3 = "update product_information set `remaining_quantity` = %s  where barcode = '%s' " % (str(newquantity),str(tempbar))
+            localDB.execute(query3)
     query3 = "Insert into transactions values('%s','%s',%s)" %(str(transaction_Id),date,str(staff_Id))
     result = localDB.execute(query3)
     if(not result):
@@ -286,12 +361,13 @@ def populateLocalShopInventory(localDB, hqDB):
     result = list(hqDB.fetchall())
     for row in result:
         newQuery = "Insert into product_information values("+"'"+row[0]+"',"+"'"+MySQLdb.escape_string(row[3])+"',"+"'"+MySQLdb.escape_string(row[4])+"',"+"'"+MySQLdb.escape_string(row[5])+"',"+str(row[2])+","+str(row[6])+","+str(row[7])+","+str(row[1])+","+str(row[8])+")"
-        print newQuery
+        #print newQuery
         localDB.execute(newQuery)
 
 def performEOD(localDB, hqDB):
     submitTransactionsToHQ(localDB,hqDB)
     updateHQShopInventory(localDB,hqDB)
+    hqDatabasetoJson(hqDB)
 
 
 def performSOD(localDB, hqDB):
@@ -299,8 +375,120 @@ def performSOD(localDB, hqDB):
     clearLocalCashierTable(localDB)
     clearLocalMemberTable(localDB)
     clearLocalShopInventory(localDB)
+    jsonToDatabase(hqDB)
     updateLocalManagerTable(localDB,hqDB)
     populateLocalCashierTable(localDB,hqDB)
     populateLocalMemberTable(localDB,hqDB)
     populateLocalShopInventory(localDB,hqDB)
     return True
+
+def clearHQDatabase(hqDB):
+    try:
+        query = " Delete from `hq_shop_inventories` where 1"
+        hqDB.execute(query)
+        query = " Delete from `hq_transactions` where 1"
+        hqDB.execute(query)
+        query = " Delete from `hq_staff` where 1"
+        hqDB.execute(query)
+        query = " Delete from `hq_shops` where 1"
+        hqDB.execute(query)
+        query = " Delete from `hq_products` where 1"
+        hqDB.execute(query)
+        query = " Delete from `hq_members` where 1"
+        hqDB.execute(query)
+    except:
+        print 'Error'
+    return
+
+def retrieveFromHQ():
+    result = requests.get('http://cg3002-07-z.comp.nus.edu.sg/hq/assets/shopdata.php?shopid=shops007').content
+    if (not result):
+        return False
+    srv = pysftp.Connection(host="cg3002-07-z.comp.nus.edu.sg", username="sadm",
+    password="a+baby")
+    if(not srv):
+        return False
+    srv.chdir('../../usrlocal/apache/htdocs/hq/assets/json/')
+    srv.get('shops007.txt')
+    srv.close()
+
+def populateTempHQ(hqDB):
+    f = open('shops007.txt')
+    string = f.readlines()
+    decoded = json.loads(string[0])
+    shopdetails = decoded['shopdetails']
+    staffdetails = decoded['staffdetails']
+    products = decoded['products']
+    shopinventories = decoded['shopinventories']
+    members = decoded['members']
+    for i in shopdetails:
+        if(i):
+            query = 'insert into hq_shops values("%s","%s","%s",%s)' %(MySQLdb.escape_string(i['shop_Id']),MySQLdb.escape_string(i['name']),MySQLdb.escape_string(i['address']),i['phone_number'])
+            hqDB.execute(query)
+    for i in staffdetails:
+        if(i):
+            query = 'insert into hq_staff values(%s,"%s","%s","%s","%s",%s,"%s","%s")' %(i['staff_Id'],MySQLdb.escape_string(i['name']),MySQLdb.escape_string(i['address']),i['gender'],i['DOB'],i['contact'],i['position'],i['shop_Id'])
+            hqDB.execute(query)
+    for i in products:
+        if(i):
+            query = 'insert into hq_products values("%s","%s","%s","%s",%s,%s,%s,%s,%s,%s,%s)' %(i['barcode'],MySQLdb.escape_string(i['name']),MySQLdb.escape_string(i['category']),MySQLdb.escape_string(i['manufacturer']),(i['product_type']),i['bundle_unit_qty'],i['bundle_unit_discount'],i['min_stock_level'],i['max_stock_level'],i['normal_price'],i['member_price'])
+            hqDB.execute(query)
+    for i in shopinventories:
+        if(i):
+            query = 'insert into hq_shop_inventories values("%s","%s",%s,%s)' %(i['shop_Id'],i['barcode'],i['active_price'],i['quantity'])
+            hqDB.execute(query)
+    for i in members:
+        if(i):
+            query = 'insert into hq_members values("%s","%s","%s",%s)' %(MySQLdb.escape_string(i['email']),MySQLdb.escape_string(i['name']),i['password'],i['phone'])
+            hqDB.execute(query)
+
+def jsonToDatabase(hqDB):
+    clearHQDatabase(hqDB)
+    retrieveFromHQ()
+    populateTempHQ(hqDB)
+
+
+def FetchOneAssoc(cursor):
+    finallist = []
+    for i in cursor.fetchall():
+        data = i
+        if data == None :
+            return None
+        desc = cursor.description
+        dict = {}
+
+        for (name, value) in zip(desc, data) :
+            dict[name[0]] = str(value)
+        finallist.append(dict)
+    return finallist
+
+def convertToJson(hqDB):
+    query = 'Select * from hq_transactions'
+    hqDB.execute(query)
+    result1 = FetchOneAssoc(hqDB)
+    query = 'Select * from hq_staff'
+    hqDB.execute(query)
+    result2 = FetchOneAssoc(hqDB)
+    query = 'Select * from hq_shop_inventories'
+    hqDB.execute(query)
+    result3 = FetchOneAssoc(hqDB)
+    finallist = json.dumps([{'transactions': result1}, {'staff':result2}, {'shopinventories': result3}])
+    f = open('transactions.txt', 'w')
+    f.write(finallist)
+
+
+def sendToHQ():
+    srv = pysftp.Connection(host="cg3002-07-z.comp.nus.edu.sg", username="sadm",
+    password="a+baby")
+    srv.chdir('../../usrlocal/apache/htdocs/hq/assets/json/')
+    srv.put('transactions.txt')
+    requests.get('http://cg3002-07-z.comp.nus.edu.sg/hq/assets/parsetransactions.php?shopid=Shops007').content
+    srv.close()
+    return True
+
+def hqDatabasetoJson(hqDB):
+    convertToJson(hqDB)
+    result = sendToHQ()
+    if result:
+        clearHQDatabase(hqDB)
+    else: return False

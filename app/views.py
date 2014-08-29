@@ -4,6 +4,7 @@ from forms import LoginForm,ForgotPassword,PassForm, StaffForm
 from flask import request, session, g, redirect, url_for, abort, render_template, flash
 from flask import jsonify
 import LocalHQInterface
+import CashierInterface
 
 def commit():
     g.ldb.commit()
@@ -47,7 +48,7 @@ def eod():
         if('lockdown' in session):
             LocalHQInterface.performEOD(g.ldb.cursor(),g.hqdb.cursor())
             commit()
-            return render_template("index.html",title = 'Home',user = session['username'], lockdown = session['lockdown'] )
+            return jsonify(result = '2')
         else:
             return  redirect('/login')
     else:
@@ -59,6 +60,28 @@ def sod():
         if('lockdown' in session):
             LocalHQInterface.performSOD(g.ldb.cursor(),g.hqdb.cursor())
             commit()
+            return jsonify(result = '1')
+        else:
+            return  redirect('/login')
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/et', methods = ['GET', 'POST'])
+def est():
+    if 'username' in session:
+        if('lockdown' in session):
+            CashierInterface.endDay()
+            return render_template("index.html",title = 'Home',user = session['username'], lockdown = session['lockdown'] )
+        else:
+            return  redirect('/login')
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/st', methods = ['GET', 'POST'])
+def sst():
+    if 'username' in session:
+        if('lockdown' in session):
+            CashierInterface.startDay()
             return render_template("index.html",title = 'Home',user = session['username'], lockdown = session['lockdown'] )
         else:
             return  redirect('/login')
@@ -68,6 +91,9 @@ def sod():
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
     if 'username' in session:
+        session['lockdown'] = LocalHQInterface.getStaffPermission(g.ldb.cursor())
+        if(session['lockdown']==1):
+            return redirect('/locked')
         return redirect('/index')
     form = LoginForm()
     if form.validate_on_submit():
@@ -144,6 +170,17 @@ def forgot():
         title = 'Reset Password',
         form = form)
 
+@app.route('/pdu', methods = ['GET', 'POST'])
+def pdu():
+    if 'username' in session:
+        if('lockdown' in session):
+            list = LocalHQInterface.getListOfPDU(g.ldb.cursor())
+            return render_template("pdu.html", title = 'Price Displays',user = session['username'], lockdown = session['lockdown'], list= list)
+        else:
+            return  redirect('/login')
+    else:
+        return redirect(url_for('login'))
+
 @app.route('/products', methods = ['GET', 'POST'])
 def products():
     if 'username' in session:
@@ -168,26 +205,6 @@ def transaction():
     else:
         return redirect(url_for('login'))
 
-#@app.route('/products_search', methods = ['GET', 'POST'])
-#def product_search():
-#    if 'username' in session:
-#        if('lockdown' in session):
-#            return render_template("p_search.html",title = 'Product Search',user = session['username'], lockdown = session['lockdown'])
-#        else:
-#            return  redirect('/login')
-#    else:
-#        return redirect(url_for('login'))
-#
-#@app.route('/trans_search', methods = ['GET', 'POST'])
-#def transaction_search():
-#    if 'username' in session:
-#        if('lockdown' in session):
-#            return render_template("t_search.html",title = 'Transaction Search',user = session['username'], lockdown = session['lockdown'])
-#        else:
-#            return  redirect('/login')
-#    else:
-#        return redirect(url_for('login'))
-
 @app.route('/trans_add', methods = ['GET', 'POST'])
 def add_transaction():
     if 'username' in session:
@@ -200,13 +217,33 @@ def add_transaction():
                 for i in range(int(setCount)):
                     barlist.append(str(request.form['Barcodes'+str(i+1)]))
                     qualist.append(str(request.form['Quantities'+str(i+1)]))
-                result = LocalHQInterface.addTransactionToLocal(staffID,barlist,qualist,g.ldb.cursor())
+                result1 = LocalHQInterface.addTransactionToLocal(staffID,barlist,qualist,g.ldb.cursor())
+                pricelist = ""
+                if(result1 == '1'):
+                    pricelist = LocalHQInterface.getPriceList(barlist,qualist,g.ldb.cursor())
                 commit()
-                return jsonify({'result': result})
+                return jsonify(result =  result1,plist = pricelist)
             userlist = LocalHQInterface.getListOfStaffID(g.ldb.cursor())
             list = LocalHQInterface.getListOfTransactions(g.ldb.cursor())
             commit()
             return render_template("transaction.html",title = 'Transaction History',user = session['username'], lockdown = session['lockdown'], list=list,userlist=userlist)
+        else:
+            return  redirect('/login')
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/change_PDU', methods = ['GET', 'POST'])
+def change_PDU():
+    if 'username' in session:
+        if('lockdown' in session):
+            if request.method == 'POST':
+                pdu = request.form['pdu']
+                barcode = request.form['Barcode']
+                result1 = LocalHQInterface.changePDU(pdu,barcode,g.ldb.cursor())
+                commit()
+                return jsonify(result =  result1)
+            list = LocalHQInterface.getListOfPDU(g.ldb.cursor())
+            return render_template("pdu.html", title = 'Price Displays',user = session['username'], lockdown = session['lockdown'], list= list)
         else:
             return  redirect('/login')
     else:
@@ -224,7 +261,6 @@ def staff():
                 gender = form.gender.data
                 name = form.name.data
                 t_pass = form.temp_pass.data
-                print (address,contact,dob,gender,name,t_pass)
                 result = LocalHQInterface.createNewUser(address,contacts,dob,gender,name,t_pass,g.ldb.cursor(),g.hqdb.cursor())
                 if result:
                     commit()
@@ -260,6 +296,7 @@ def locked():
             if(session['lockdown'] == 0):
                 LocalHQInterface.lockdownPermission(g.ldb.cursor())
                 commit()
+                CashierInterface.endDay()
                 session['lockdown'] = 1
             return render_template("lockdown.html",title = 'Lockdown Initiated',user = session['username'], lockdown = session['lockdown'])
         else:
@@ -274,6 +311,7 @@ def release():
             if (session['lockdown'] == 1):
                 LocalHQInterface.releasePermission(g.ldb.cursor())
                 commit()
+                CashierInterface.startDay()
                 session['lockdown'] = 0
             return render_template("release.html",title = 'Lockdown Released',user = session['username'], lockdown = session['lockdown'])
         else:
@@ -284,3 +322,4 @@ def release():
 @app.errorhandler(404)
 def not_found(error):
     return render_template('error.html'), 404
+

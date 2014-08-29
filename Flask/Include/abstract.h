@@ -509,7 +509,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
       arbitrary data.
 
       0 is returned on success.  buffer and buffer_len are only
-      set in case no error occurs.  Otherwise, -1 is returned and
+      set in case no error occurrs.  Otherwise, -1 is returned and
       an exception set.
 
        */
@@ -524,7 +524,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
       writeable memory location in buffer of size buffer_len.
 
       0 is returned on success.  buffer and buffer_len are only
-      set in case no error occurs. Otherwise, -1 is returned and
+      set in case no error occurrs. Otherwise, -1 is returned and
       an exception set.
 
        */
@@ -1381,13 +1381,6 @@ PyAPI_FUNC(int) PyObject_IsSubclass(PyObject *object, PyObject *typeorclass);
 PyAPI_FUNC(int) _PyObject_RealIsInstance(PyObject *inst, PyObject *cls);
 
 PyAPI_FUNC(int) _PyObject_RealIsSubclass(PyObject *derived, PyObject *cls);
-
-
-/* For internal use by buffer API functions */
-PyAPI_FUNC(void) _Py_add_one_to_index_F(int nd, Py_ssize_t *index,
-                                        const Py_ssize_t *shape);
-PyAPI_FUNC(void) _Py_add_one_to_index_C(int nd, Py_ssize_t *index,
-                                        const Py_ssize_t *shape);
 
 
 #ifdef __cplusplus
